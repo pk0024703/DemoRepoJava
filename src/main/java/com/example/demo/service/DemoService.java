@@ -19,4 +19,9 @@ public class DemoService {
         return "dd";
     }
 
+
+
+    public void postData(){
+
+    }
 }

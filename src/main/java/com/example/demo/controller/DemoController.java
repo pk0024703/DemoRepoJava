@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-
-
+@RequestMapping("/users")
 public class DemoController {
 
     @Autowired
@@ -17,7 +16,13 @@ public class DemoController {
 
     @RequestMapping(value = "/",method = RequestMethod.GET)
     public String getData(){
-        service.getMyServiceData();
+        //service.getMyServiceData();
         return "hello";
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
+    public String postData(){
+        service.postData();
+        return "Success";
     }
 }
