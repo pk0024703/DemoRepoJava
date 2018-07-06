@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -8,20 +9,21 @@ import org.springframework.web.client.RestTemplate;
 public class DemoService {
 
 
-    public RestTemplate restTemplate;
+    private RestTemplate restTemplate = new RestTemplate();
 
 
     public String getMyServiceData() {
 
-        ResponseEntity response = this.restTemplate.getForEntity("https://jsonplaceholder.typicode.com/posts/1" , String.class);
-
-
-        return "dd";
+        final String uri = "https://jsonplaceholder.typicode.com/posts/1";
+        String result = restTemplate.getForObject(uri, String.class);
+        System.out.println(result);
+        return result;
     }
 
 
 
-    public void postData(){
-
+    public ResponseEntity<User> postData(User user){
+        final String uri = "https://jsonplaceholder.typicode.com/posts/";
+        return restTemplate.postForEntity(uri,user,User.class);
     }
 }
