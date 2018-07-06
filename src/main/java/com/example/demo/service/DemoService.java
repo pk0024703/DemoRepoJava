@@ -8,19 +8,13 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class DemoService {
 
-
     private RestTemplate restTemplate = new RestTemplate();
 
-
-    public String getMyServiceData() {
-
+    public ResponseEntity<User> getMyServiceData() {
         final String uri = "https://jsonplaceholder.typicode.com/posts/1";
-        String result = restTemplate.getForObject(uri, String.class);
-        System.out.println(result);
+        ResponseEntity<User> result = restTemplate.getForEntity(uri, User.class);
         return result;
     }
-
-
 
     public ResponseEntity<User> postData(User user){
         final String uri = "https://jsonplaceholder.typicode.com/posts/";

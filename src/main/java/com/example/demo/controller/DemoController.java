@@ -17,11 +17,10 @@ public class DemoController {
     @Autowired
     DemoService service;
 
-    @RequestMapping(value = "/",method = RequestMethod.GET)
-    public String getData(){
-        String output = service.getMyServiceData();
-        System.out.println("------>" + output);
-        return output;
+    @RequestMapping(method = RequestMethod.GET)
+    public User getData(){
+        ResponseEntity<User> userResponseEntity = service.getMyServiceData();
+        return userResponseEntity.getBody();
     }
 
     @RequestMapping(method = RequestMethod.POST)
