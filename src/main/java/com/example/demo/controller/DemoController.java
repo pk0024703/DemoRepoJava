@@ -17,16 +17,15 @@ public class DemoController {
     @Autowired
     DemoService service;
 
-    @RequestMapping(value = "/",method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public String getData(){
         String output = service.getMyServiceData();
-        System.out.println("------>" + output);
         return output;
     }
 
     @RequestMapping(method = RequestMethod.POST)
     public User postData(@RequestBody User user){
-        ResponseEntity<User> response = service.postData(user);
-        return response.getBody();
+        User response = service.postData(user);
+        return response;
     }
 }

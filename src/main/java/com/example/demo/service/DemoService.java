@@ -22,8 +22,8 @@ public class DemoService {
 
 
 
-    public ResponseEntity<User> postData(User user){
+    public User postData(User user){
         final String uri = "https://jsonplaceholder.typicode.com/posts/";
-        return restTemplate.postForEntity(uri,user,User.class);
+        return restTemplate.postForEntity(uri,user,User.class).getBody();
     }
 }
