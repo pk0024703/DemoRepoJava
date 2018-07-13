@@ -1,29 +1,33 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.User;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 
 @Service
 public class DemoService {
 
+    @Value("${service.url}")
+    private String serviceUrl;
+
 
     private RestTemplate restTemplate = new RestTemplate();
 
-
-    public String getMyServiceData() {
-
-        final String uri = "https://jsonplaceholder.typicode.com/posts/1";
-        String result = restTemplate.getForObject(uri, String.class);
-        System.out.println(result);
-        return result;
+    public DemoService(RestTemplateBuilder restTemplateBuilder) {
+        this.restTemplate = restTemplateBuilder.build();
     }
 
 
+    public String getMyServiceData(String id) {
+        String result = restTemplate.getForObject(serviceUrl+ id, String.class);
+        return result;
+    }
 
     public User postData(User user){
-        final String uri = "https://jsonplaceholder.typicode.com/posts/";
-        return restTemplate.postForEntity(uri,user,User.class).getBody();
+        return restTemplate.postForEntity(serviceUrl,user,User.class).getBody();
     }
 }

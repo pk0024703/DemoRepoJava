@@ -54,14 +54,14 @@ public class DemoControllerTest {
 //        Mockito.when(demoService.postData(user)).thenReturn(user);
 //        mockMvc.perform(MockMvcRequestBuilders.post("/users").contentType(MediaType.APPLICATION_JSON)
 //        .content(mockData)).andExpect(status().isCreated());
-        mockMvc.perform(MockMvcRequestBuilders.get("/users")).andExpect(status().isOk());
+        mockMvc.perform(MockMvcRequestBuilders.get("/users")).andExpect(status().isOk()).andReturn();
     }
 
-    private User initializeUser(){
-        User user = new User();
-        user.setBody("testBody");
-        user.setTitle("testTitle");
-        user.setUserId("130");
-        return user;
-    }
+//    private User initializeUser(){
+//        User user = new User();
+//        user.setBody("testBody");
+//        user.setTitle("testTitle");
+//        user.setUserId("130");
+//        return user;
+//    }
 }
