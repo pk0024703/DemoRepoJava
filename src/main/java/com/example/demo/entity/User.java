@@ -48,6 +48,12 @@ public class User {
         this.id = id;
     }
 
+    public User(String userId, String title, String body) {
+        this.userId = userId;
+        this.title = title;
+        this.body = body;
+    }
+
     public String getUserId() {
         return userId;
     }

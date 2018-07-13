@@ -23,7 +23,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @RunWith(SpringRunner.class)
 @RestClientTest(DemoService.class)
 //@TestPropertySource(properties = "service.url=https://jsonplaceholder.typicode.com/posts/1")
-@TestPropertySource(properties = "service.url=https://jsonplaceholder.typicode.com/posts/1")
+//@TestPropertySource(properties = "service.url=https://jsonplaceholder.typicode.com/posts/1")
 public class DemoServiceTests {
 
     @Autowired
@@ -35,14 +35,14 @@ public class DemoServiceTests {
 
 
 
-    final String output = "{\"id\": 1 , \"name\" : \"testName\"}";
+    final String output = "{\"id\": 1 , \"userId\" : \"testUserId\", \"title\" : \"testTitle\", \"body\" : \"testBody\"}";
 
     @Test
     public void testGetMyServiceDataMethodOutput() {
 
 
 
-        mockRestServiceServer.expect(ExpectedCount.once(), requestTo("https://jsonplaceholder.typicode.com/posts/1"))
+        mockRestServiceServer.expect(ExpectedCount.once(), requestTo("https://jsonplaceholder.typicode.com/posts/"))
                 .andExpect(method(HttpMethod.GET))
                 .andRespond(withSuccess(output, MediaType.TEXT_PLAIN));
 
@@ -57,20 +57,13 @@ public class DemoServiceTests {
 
     @Test
     public void testPostDataMethod() {
-        User user = new User("testUserId","testTitle","testBody","testId");
+        User user = new User("testUserId","testTitle","testBody");
         ResponseEntity<User> userResponseEntity = new ResponseEntity<>(user, HttpStatus.OK);
         mockRestServiceServer.expect(requestTo("https://jsonplaceholder.typicode.com/posts/")).andExpect(method(HttpMethod.POST)).andRespond(withSuccess(output,MediaType.APPLICATION_JSON));
         User output = demoService.postData(user);
 
-        Assert.assertEquals(1,output.getId());
+        Assert.assertEquals("1",output.getId());
         mockRestServiceServer.verify();
     }
-
-
-
-
-
-
-
 
 }

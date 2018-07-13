@@ -23,7 +23,7 @@ public class DemoService {
 
 
     public String getMyServiceData(String id) {
-        String result = restTemplate.getForObject(serviceUrl+ id, String.class);
+        String result = restTemplate.getForObject(serviceUrl, String.class);
         return result;
     }
 
