@@ -37,13 +37,13 @@ resources:
 
 # This repo contains any secret credential config that needs to be
 # passed into your generated pipeline via fly --load-vars-from options
-- name: branch-manager-credentials
-  type: git
-  source:
-    # Set this to the uri of your repo containing your non-secret non-credential config
-    uri: {{github-credentials-uri}}
-    branch: master
-    private_key: {{github-private-key}}
+#- name: branch-manager-credentials
+#  type: git
+#  source:
+#    # Set this to the uri of your repo containing your non-secret non-credential config
+#    uri: {{github-credentials-uri}}
+#    branch: master
+#    private_key: {{github-private-key}}
 
 - name: master
   type: git
@@ -102,10 +102,10 @@ jobs:
   - get: template-repo
     resource: branch-manager-ci-repo
     trigger: true
-  - get: credentials-repo
-    resource: branch-manager-credentials
-    params: {depth: 20}
-    trigger: true
+#  - get: credentials-repo
+#    resource: branch-manager-credentials
+#    params: {depth: 20}
+#    trigger: true
   - get: config-repo
     resource: branch-manager-ci-repo
     params: {depth: 20, submodules: none}
@@ -121,7 +121,7 @@ jobs:
       CONCOURSE_PASSWORD: {{CONCOURSE_PASSWORD}}
       CONCOURSE_TEAM: branch-manager
       PIPELINE_LOAD_VARS_FROM_1: config-repo/branch-manager-config.yml
-      PIPELINE_LOAD_VARS_FROM_2: credentials-repo/branch-manager-credentials.yml
+#      PIPELINE_LOAD_VARS_FROM_2: credentials-repo/branch-manager-credentials.yml
       GROUP_PER_BRANCH: true
 
 - name: Security Scan
