@@ -8,7 +8,7 @@ resources:
 - name: concourse-branch-1
   type: git
   source:
-    uri: https://github.com/karthidec/concourse-branchmanager.git
+    uri: https://github.com/karthidec/DemoRepoJava.git
     branch: master
     private_key: ((github-private-key))
   check_every: 300s
@@ -23,7 +23,7 @@ resources:
 - name: branch-manager-git-branches
   type: git-branches
   source:
-    uri: https://github.com/karthidec/concourse-branchmanager.git
+    uri: https://github.com/karthidec/DemoRepoJava.git
     max_branches: 12
     private_key: ((github-private-key))
   check_every: 300s
