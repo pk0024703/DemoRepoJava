@@ -48,11 +48,12 @@ jobs:
   - task: manage-branches
     file: concourse-branch-manager/tasks/manage-branches.yml
     params:
-      BRANCH_RESOURCE_TEMPLATE: template-repo/ci/pipelines/templates/branch-resource-template.yml.erb
-      BRANCH_JOB_TEMPLATE: template-repo/ci/pipelines/templates/branch-job-template.yml.erb
+      BRANCH_RESOURCE_TEMPLATE: ci/pipelines/templates/branch-resource-template.yml.erb
+      BRANCH_JOB_TEMPLATE: ci/pipelines/templates/branch-job-template.yml.erb
       CONCOURSE_URL: https://concourse-pipeline-engineering.apps-np.homedepot.com
       CONCOURSE_USERNAME: branch-manager
       CONCOURSE_PASSWORD: branch-manager
       CONCOURSE_TEAM: branch-manager
-      PIPELINE_LOAD_VARS_FROM_1: template-repo/ci/secrets.yml
+      PIPELINE_LOAD_VARS_FROM_1: secrets.yml
       GROUP_PER_BRANCH: true
+
