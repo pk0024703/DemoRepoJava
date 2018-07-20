@@ -1,0 +1,30 @@
+# This file should be copied to your repo and not run from here
+github-uri:
+github-semver-uri:
+github-credentials-uri:
+github-org-name:
+github-repo-name:
+concourse-url:
+tracker-project-id: ""
+cf-org:
+cf-space:
+sonar-project-key:
+sonar-project-name:
+assigned-director-ldap:
+assigned-manager-ldap:
+assigned-vp-ldap:
+assigned-to-ldap:
+u-automation:
+u-automation-package-number:
+category-area:
+cmdb-ci:
+deployment-environment:
+deployment-type:
+coordinator:
+fms-number:
+min-pr-approvers:
+pcf-application-nickname:
+docker-image-repo:
+docker-image-tag:
+project-language:
+

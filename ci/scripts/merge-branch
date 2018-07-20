@@ -1,0 +1,5 @@
+#!/bin/bash
+
+git merge $BRANCH -m "Pipeline updating out of date branch with ${BRANCH}"
+
+git clone ./ ../merged-code

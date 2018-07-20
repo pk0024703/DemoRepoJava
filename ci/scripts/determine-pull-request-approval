@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+require 'English'
+require 'json'
+require 'uri'
+require 'net/http'
+require 'openssl'
+require 'set'
+
+accessToken = ENV['GITHUB_TOKEN']
+pullNumberFile = ENV['PULL_REQUEST_NUMBER_FILE']
+pullNumber = File.open("../#{pullNumberFile}", 'rb') { |file| file.read }.to_i
+min_approvals = ENV['MIN_APPROVALS'].to_i
+owner_repo = ENV['OWNER_REPO']
+baseURL = "https://github.homedepot.com/api/v3/repos/#{owner_repo}/pulls/#{pullNumber}"
+pullRequestURL = URI("#{baseURL}?access_token=#{accessToken}")
+reviewURL = URI("#{baseURL}/reviews?access_token=#{accessToken}")
+
+http = Net::HTTP.new(pullRequestURL.host, pullRequestURL.port)
+http.use_ssl = true
+http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+
+pullRequest = Net::HTTP::Get.new(pullRequestURL)
+reviewRequest = Net::HTTP::Get.new(reviewURL)
+reviewRequest["Accept"] = "application/vnd.github.black-cat-preview+json"
+
+pullRequestResponse = http.request(pullRequest)
+reviewResponse = http.request(reviewRequest)
+pullRequestJSON = JSON.parse(pullRequestResponse.read_body)
+reviewJSON = JSON.parse(reviewResponse.read_body)
+sha = pullRequestJSON["head"]["sha"]
+code_src_sha = %x(git rev-parse HEAD).strip!
+if code_src_sha != sha
+  puts "The code source is at #{code_src_sha} and is not up to date with pull request sha #{sha}."
+  exit(2)
+end
+
+approvers = Set.new
+
+reviewJSON.each do |review|
+     commitID = review['commit_id']
+     if sha == commitID
+        reviewID = review['id']
+        reviewState = review['state']
+        puts "Matching review found for commit: #{commitID} with review ID: #{reviewID} and state: #{reviewState}"
+        if reviewState == "APPROVED"
+          userID = review["user"]["login"]
+          approvers.add(userID)
+        end
+      end
+end
+
+if approvers.size >= min_approvals
+    puts "Minimum of #{min_approvals} approvals have been met for pull request number #{pullNumber} with commit id, #{sha}"
+    puts "Approvers: " + approvers.to_a.join(", ")
+
+else
+    puts "Minimum of #{min_approvals} approvals have not been met for pull request #{pullNumber} with commit id, #{sha}"
+    exit(1)
+end

@@ -1,0 +1,99 @@
+#!/bin/bash
+
+
+
+
+if [[ $(date +%u) -gt 5 ]]
+  then
+    echo "Stop doing work on the weekend!"
+    exit 1
+fi
+
+
+if [[ $(expr $(date -d '08:00' +%s) - $(date +%s) - $APPROVAL_WINDOW \* 60 \* 60) -gt 0 ]]
+  then
+    START_DATE=`date -d '08:00' +%Y-%m-%d\ %H:%M:%S`
+    END_DATE=`date -d "$(date -d '08:00') + $CHANGE_WINDOW hours" +%Y-%m-%d\ %H:%M:%S`
+elif [[ $(expr $(date -d '13:00' +%s) - $(date +%s) - $APPROVAL_WINDOW \* 60 \* 60) -gt 0 ]]
+  then
+    START_DATE=`date -d '13:00' +%Y-%m-%d\ %H:%M:%S`
+    END_DATE=`date -d "$(date -d '13:00') + $CHANGE_WINDOW hours" +%Y-%m-%d\ %H:%M:%S`
+elif [[ $(date +%u) -eq 5 ]]
+  then
+    START_DATE=`date -d "$(date -d '08:00') + 3 days" +%Y-%m-%d\ %H:%M:%S`
+    END_DATE=`date -d "$(date -d '08:00') + $CHANGE_WINDOW hours + 3 days" +%Y-%m-%d\ %H:%M:%S`
+else
+    START_DATE=`date -d "$(date -d '08:00') + 1 days" +%Y-%m-%d\ %H:%M:%S`
+    END_DATE=`date -d "$(date -d '08:00') + $CHANGE_WINDOW hours + 1 days" +%Y-%m-%d\ %H:%M:%S`
+fi
+
+echo "START_DATE = $START_DATE"
+echo "END_DATE = $END_DATE"
+
+# for major changes
+http_code=$(curl -X -s -o out.html -w '%{http_code}' --max-time 300 -XPOST -H"Content-Type: application/json" -d \
+"{
+        \"type\": \"Major\",
+        \"assigned_to\": \"${ASSIGNED_TO}\",
+        \"category\": \"${CATEGORY}\",
+        \"cmdb_ci\": \"${CMDB_CI}\",
+        \"description\": \"[DO NOT APPROVE] SnowField Canary Test (Major, Patching)\",
+        \"detailed_backout_plan\": {
+            \"description\": \"detailed_backout_plan\",
+            \"steps\": [
+              {
+                \"u_description\": \"detailed_backout_plan step description1\",
+                \"u_assigned_to\": \"${ASSIGNED_TO}\",
+                \"u_duration\": \"0 00:15:00\"
+              }
+            ]
+          },
+        \"detailed_implementation_plan\": {
+          \"description\": \"detailed_implementation_plan\",
+          \"steps\": [
+            {
+              \"u_description\": \"detailed_implementation_plan step description\",
+              \"u_assigned_to\": \"${ASSIGNED_TO}\",
+              \"u_duration\": \"0 00:15:00\"
+            }
+          ]
+        },
+        \"justification\": \"Justification\",
+        \"post_implementation_verification_plan\": {
+          \"description\": \"post_implementation_verification_plan\",
+          \"steps\": [
+            {
+              \"u_description\": \"post_implementation_verification_plan step description\",
+              \"u_assigned_to\": \"${ASSIGNED_TO}\",
+              \"u_duration\": \"0 00:30:00\"
+            }
+          ]
+        },
+        \"requested_by\": \"${COORDINATOR}\",
+        \"short_description\": \"[DO NOT APPROVE] SnowField Canary Test (Major, Patching)\",
+        \"start_date\": \"${START_DATE}\",
+        \"end_date\": \"${END_DATE}\",
+        \"u_assigned_director\": \"${ASSIGNED_DIRECTOR}\",
+        \"u_assigned_manager\": \"${ASSIGNED_MANAGER}\",
+        \"u_assigned_vp\": \"${ASSIGNED_VP}\",
+        \"u_automation\": \"${AUTOMATION}\",
+        \"u_automation_pkg_no\": \"${AUTOMATION_PACKAGE_NUMBER}\",
+        \"u_classification\": \"${DEPLOYMENT_TYPE}\",
+        \"u_deployment_environment\": \"${DEPLOYMENT_ENVIRONMENT}\",
+        \"u_downtime_duration_and_impact\": \"${DOWNTIME_COMMENT}\",
+        \"u_downtime_required_\": \"${DOWNTIME_REQUIRED}\",
+        \"u_fms_number\": \"${FMS_NUMBER}\",
+        \"u_chg_env\": \"Production\",
+        \"u_production_impact\": \"Yes\",
+        \"u_size\": \"Normal\",
+        \"u_validated_by\": \"${ASSIGNED_TO}\",
+        \"u_work_characterization\": \"Normal Change\",
+        \"u_itil_watch_list\": \"${ASSIGNED_TO}\"
+}" \
+--url "https://snowfield.apps.homedepot.com/changes")
+
+cat out.html
+
+if [[ $http_code -ne 200 ]]; then
+    exit 1
+fi

@@ -1,0 +1,23 @@
+github-uri: git@github.com:pk0024703/DemoRepoJava.git
+github-semver-uri: git@github.homedepot.com:Gatekeeper/application-manager-semver.git
+github-credentials-uri: git@github.homedepot.com:Gatekeeper/apper-keeper-aggregator-credentials.git
+github-org-name: pk0024703
+github-repo-name: DemoRepoJava
+concourse-url: https://concourse-pipeline-engineering.apps-np.homedepot.com
+tracker-project-id: "2026577"
+cf-org: Gatekeeper
+cf-space: services
+sonar-project-key: apper-keeper-aggregator
+sonar-project-name: apper-keeper-aggregator
+min-pr-approvers: 2
+tracker-approvers: 2970112, 1445198
+qualityhub-application-name: Gatekeeper-ApperKeeperAggregator
+qualityhub-job-set: Tests
+qualityhub-job-name: Unit Tests
+cr-assigned-to: cgk0o7
+cr-template: CD0001001
+cr-snowfield-url: https://snowfield-homedepotuat.apps-np.homedepot.com
+docker-image-repo: docker.artifactory.homedepot.com/java
+docker-image-tag: 8
+project-language: java
+artifact-pattern: 'artifacts/app.jar'

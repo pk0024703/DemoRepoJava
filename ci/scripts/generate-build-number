@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+require 'json'
+require 'date'
+
+time_input = File.open("../timestamp/input", 'rb') { |file| file.read }.strip
+
+time_json = JSON.parse(time_input)
+
+time = DateTime.parse(time_json["version"]["time"]).to_time.to_r.to_s.split('/')[0]
+
+puts "Build Number: #{time}"
+
+Dir.mkdir("../generated-build-number") unless File.exists?("../generated-build-number")
+
+open('../generated-build-number/generated-build-number', 'w') do |f|
+  f.puts time
+end

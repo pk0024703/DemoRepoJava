@@ -1,0 +1,95 @@
+#!/bin/bash
+
+
+if [[ -z $BUILD_NUMBER_FILE ]];
+then
+  commit_sha=$(git rev-parse HEAD)
+
+  echo "Commit sha: ${commit_sha}"
+  echo
+
+  the_statuses_url="https://github.homedepot.com/api/v3/repos/$OWNER_REPO/commits/${commit_sha}/statuses"
+
+  echo "Attempting to read statuses from ${the_statuses_url}"
+  echo
+
+  statuses_curl=$(curl --silent -u $GITHUB_USER:$GITHUB_TOKEN -X GET \
+  --write-out "HTTPSTATUS:%{http_code}" \
+  $the_statuses_url \
+  -H 'content-type: application/json')
+
+  statuses_json=$(echo $statuses_curl | sed -e 's/HTTPSTATUS\:.*//g')
+  statuses_http_code=$(echo $statuses_curl | tr -d '\n' | sed -e 's/.*HTTPSTATUS://')
+
+  if [[ $statuses_json != *"context"* ]]
+  then
+    echo "Failed to find status url."
+    echo "HTTP Status: ${statuses_http_code}"
+    echo "Body: ${statuses_json}"
+    exit 14
+  fi
+
+  statuses=($(echo $statuses_json | jq -c '.[] | {context: .context, target_url: .target_url}'))
+
+  for element in "${statuses[@]}"
+  do
+
+    if [[ "${element}" =~ artifactPublish ]]
+    then
+      artifact_url=$(echo ${element} | jq -c '.target_url' | \
+                     awk '{gsub(/"/, "",$0); print $0}')
+
+      echo "Found Artifact URL: ${artifact_url}"
+
+      build_number=$(echo ${artifact_url} | awk -F "/" '{print $NF}')
+      echo "Using build number: ${build_number}"
+      break;
+    fi
+
+    if [[ -z ${build_number} ]]
+    then
+      echo "No build number found."
+      exit 11
+    fi
+  done
+else
+  
+  build_number=$(cat ../$BUILD_NUMBER_FILE)
+
+fi
+
+if [[ -z ${build_number} ]]
+then
+  echo "No build number found."
+  exit 11
+fi
+
+curl -X POST \
+    https://maven.artifactory.homedepot.com/artifactory/api/archive/buildArtifacts \
+    -H 'content-type: application/json' \
+    -d "{
+   \"buildName\": \"${BUILD_NAME}\",
+   \"buildNumber\": \"${build_number}\",
+   \"archiveType\": \"tar\"
+  }" -o artifact.tar
+
+mkdir artifact
+
+tar -xvf artifact.tar -C artifact
+
+shopt -s globstar
+
+echo  "Project Language --" $PROJECT_LANGUAGE
+
+ if [[ $PROJECT_LANGUAGE = "java" ]]
+ then
+    mv artifact/**/*.jar ../artifacts/app.jar
+ fi
+
+
+ if [[ $PROJECT_LANGUAGE = "js" ]]
+ then
+    tar -xvf artifact/**/**/*.tgz -C ../artifacts
+    mv ../artifacts/temp.npmrc ../artifacts/.npmrc
+ fi
+

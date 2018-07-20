@@ -1,0 +1,9 @@
+---
+platform: linux
+
+run:
+  dir: code-src
+  path: ../code-src/ci/scripts/security-scan
+
+inputs:
+- name: code-src

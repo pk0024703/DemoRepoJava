@@ -1,0 +1,17 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: benbrown/git-mirror
+
+run:
+  dir: code-src
+  path: ../code-src/ci/scripts/merge-branch
+
+inputs:
+- name: code-src
+
+outputs:
+- name: merged-code

@@ -1,0 +1,187 @@
+#!/usr/bin/env ruby
+require 'net/http'
+require 'json'
+require 'uri'
+require 'date'
+
+class PromotionError < StandardError
+  attr_reader :response_code
+
+  def initialize(message, response_code)
+    super(message)
+
+    @response_code = response_code
+  end
+end
+
+def move_all_artifacts(artifacts, dry_run: true, rollback_on_error: false)
+  puts "Moving artifacts: "
+  url_extra = ''
+  if dry_run
+    puts "------"
+    puts "Dry Run!\n No files will actually be moved at this point."
+  end
+
+  rollbacks = Array.new
+
+  for artifact in artifacts
+    file_type = File.extname(artifact["uri"]).gsub('.','')
+    group_id = artifact["uri"].split($artifact_id)[0].gsub($artifactory_api+'/storage/libs-snapshot-local/','')
+    group_id[group_id.length-1] = '' if /\/$/ =~ group_id
+
+    source = artifact["uri"].match('.+/api/storage/(.*)')[1]
+    destination = "/libs-release-local/#{group_id}/#{$artifact_id}/#{$version}/#{$artifact_id}-#{$version}.#{file_type}"
+
+    begin
+      move_artifact(source, destination, dry_run)
+      rollbacks.push({'source' => destination, 'destination' => '/'+source})
+      puts "\"#{source}\" successfully moved to \"#{destination}\""
+    rescue PromotionError => e
+      puts "Error!"
+      puts "[#{e.response_code}] #{e.message}"
+      puts
+      rollback_artifacts(rollbacks)
+      exit(1)
+    end
+  end
+  if dry_run
+    puts "End of Dry Run!"
+    puts "------"
+  end
+
+  if dry_run == false && rollbacks
+    return rollbacks
+  end
+end
+
+def rollback_artifacts(rollbacks)
+  if rollbacks.length > 0
+    puts "Attempting to rollback previously moved artifacts."
+    for rb in rollbacks
+      begin
+        move_artifact(rb["source"], rb["destination"], false)
+        puts "Rollback of #{rb['destination']} successful."
+      rescue PromotionError => e
+        puts "Rollback of #{rb["destination"]} failed!"
+        puts "\tError: #{e.message}"
+      end
+    end
+  end
+end
+
+def move_artifact(source, destination, dry_run=true)
+  remaining_tries = 3;
+  url_extra = (dry_run ? '&dry=1':'')
+  source[0] = '' if /^\// =~ source
+
+  move_artifact_url = "#{$artifactory_api}/move/#{source}?to=#{destination}#{url_extra}"
+
+  begin
+    uri = URI.parse(move_artifact_url)
+    req = Net::HTTP::Post.new(uri)
+    req.basic_auth(ENV['ARTIFACTORY_USER'], ENV['ARTIFACTORY_TOKEN'])
+    res = Net::HTTP.start(uri.hostname, uri.port, :use_ssl => uri.scheme == 'https') do |http|
+      http.request(req)
+    end
+    json = JSON.parse(res.read_body)
+  rescue Timeout::Error, Errno::ETIMEDOUT, Errno::EINVAL, Errno::ECONNRESET,
+         Errno::ECONNREFUSED, EOFError, Net::HTTPBadResponse,
+         Net::HTTPHeaderSyntaxError, Net::ProtocolError, SocketError => e
+    remaining_tries -= 1
+    retry if remaining_tries > 0
+    raise PromotionError.new(e.message, 500)
+  end
+
+  res_code = res.code.to_i
+
+  if res_code > 499 && res_code < 600
+    raise PromotionError.new("Server error trying to move #{source}", response_code: res_code)
+  end
+
+  if res_code != 200
+    msg = json['errors'][0]['message'] if !json['errors'].nil?
+    msg = json['messages'][0]["message"] if !json['messages'].nil? && json['messages'].length
+    msg = "Unknown Error" if msg.nil?
+    raise PromotionError.new(msg, res_code)
+  end
+end
+
+version_file = ENV['VERSION_FILE']
+puts "Version file: #{version_file}"
+
+$version = File.open("../#{version_file}", 'rb') { |file| file.read }.strip
+puts "Version number: #{$version}"
+
+build_number_file = ENV['BUILD_NUMBER_FILE']
+$build_number = File.open("../#{build_number_file}", 'rb') { |file| file.read }.strip
+puts "Build number: #{$build_number}"
+
+$artifactory_api = ENV['ARTIFACTORY_API_URL']
+
+prop_search_url = "#{$artifactory_api}/search/prop?build.number=#{$build_number}&repos=libs-snapshot-local"
+prop_search_uri = URI.parse(prop_search_url)
+prop_search_req = Net::HTTP::Get.new(prop_search_uri)
+prop_search_res = Net::HTTP.start(prop_search_uri.hostname, prop_search_uri.port, :use_ssl => prop_search_uri.scheme == 'https') do |http|
+  http.request(prop_search_req)
+end
+
+prop_search_json = JSON.parse(prop_search_res.read_body)
+
+artifacts = prop_search_json["results"]
+
+if artifacts.length > 0
+  $artifact_id = artifacts[0]["uri"].match(".+\\/(.+?)(-\\d|\\.#{File.extname(artifacts[0]["uri"]).gsub('.','')})")[1]
+
+  move_all_artifacts(artifacts, dry_run: true)
+  puts
+  rollbacks = move_all_artifacts(artifacts, dry_run: false, rollback_on_error: true)
+
+  puts
+  puts "Promting build..."
+  build_promote_url = "#{$artifactory_api}/build/promote/#{$artifact_id}/#{$build_number}"
+  build_promote_uri = URI.parse(build_promote_url)
+  build_promote_req = Net::HTTP::Post.new(build_promote_uri)
+  build_promote_req["Content-Type"] = "application/json"
+  build_promote_req.basic_auth(ENV['ARTIFACTORY_USER'], ENV['ARTIFACTORY_TOKEN'])
+  build_promote_req.body = {
+    "status":"Promoted",
+    "timestamp":Time.now.strftime("%Y-%m-%dT%H:%M:%S.000%z"),
+    "sourceRepo":"libs-release-local",
+    "targetRepo":"libs-release-local",
+    "ciUser": ENV['ARTIFACTORY_USER'],
+    "dryRun": false,
+    "failFast": false
+  }.to_json
+  build_promote_res = Net::HTTP.start(build_promote_uri.hostname, build_promote_uri.port, :use_ssl => build_promote_uri.scheme == 'https') do |http|
+    http.request(build_promote_req)
+  end
+
+  if build_promote_res.code.to_i == 200
+    build_promote_json = JSON.parse(build_promote_res.read_body)
+    if !build_promote_json["messages"].nil? && build_promote_json["messages"].length > 0
+      puts "Build failed with following reasons: "
+      for msg in build_promote_json["messages"]
+        puts "[#{msg['level']}] #{msg['message']}"
+      end
+      puts
+      if rollbacks
+        rollback_artifacts(rollbacks)
+      end
+      exit(1)
+    end
+    puts "Build successfully promoted!"
+  else
+    puts "Unexpected error while promoting build"
+    puts "Error: [#{build_promote_res.code.to_i}] #{build_promote_res.message.to_s}"
+    puts "Build Not promoted"
+    puts "Please try again"
+    puts
+    if rollbacks
+      rollback_artifacts(rollbacks)
+    end
+    exit(1)
+  end
+else
+  puts "No artifacts found!"
+  exit(1)
+end
