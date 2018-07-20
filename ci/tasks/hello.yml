@@ -1,0 +1,13 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: node
+    tag: alpine
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    node --version
+    echo 'Hello World!'

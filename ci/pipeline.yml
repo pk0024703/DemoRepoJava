@@ -1,0 +1,58 @@
+resource_types:
+- name: git-branches
+  type: docker-image
+  source:
+    repository: tracker/git-branches-resource
+
+resources:
+- name: concourse-branch-1
+  type: git
+  source:
+    uri: https://github.com/karthidec/concourse-branchmanager.git
+    branch: master
+    private_key: ((github-private-key))
+  check_every: 300s
+
+- name: concourse-branch-manager
+  type: git
+  source:
+    uri: https://github.com/pivotaltracker/concourse-branch-manager.git
+    branch: master
+    ignore_paths: [Gemfile, Gemfile.lock]
+
+- name: branch-manager-git-branches
+  type: git-branches
+  source:
+    uri: https://github.com/karthidec/concourse-branchmanager.git
+    max_branches: 12
+    private_key: ((github-private-key))
+  check_every: 300s
+
+jobs:
+- name: branch-manager
+  serial: true
+  plan:
+  - get: concourse-branch-manager
+    params: {depth: 1}
+    trigger: true
+  - get: git-branches
+    resource: branch-manager-git-branches
+    trigger: true
+  - get: template-repo
+    resource: concourse-branch-1
+    trigger: true
+  - get: credentials-repo
+    resource: concourse-branch-1
+  - get: config-repo
+    resource: concourse-branch-1
+  - task: manage-branches
+    file: concourse-branch-manager/tasks/manage-branches.yml
+    params:
+      BRANCH_RESOURCE_TEMPLATE: template-repo/ci/pipelines/templates/branch-resource-template.yml.erb
+      BRANCH_JOB_TEMPLATE: template-repo/ci/pipelines/templates/branch-job-template.yml.erb
+      CONCOURSE_URL: https://concourse-pipeline-engineering.apps-np.homedepot.com
+      CONCOURSE_USERNAME: branch-manager
+      CONCOURSE_PASSWORD: branch-manager
+      CONCOURSE_TEAM: branch-manager
+      PIPELINE_LOAD_VARS_FROM_1: template-repo/ci/secrets.yml
+      GROUP_PER_BRANCH: true

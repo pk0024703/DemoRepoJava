@@ -162,7 +162,7 @@ jobs:
     params:
       GITHUB_ORG: {{github-org-name}}
       GITHUB_REPO: {{github-repo-name}}
-      GITHUB_API_URL: https://github.homedepot.com/api/v3/
+      GITHUB_API_URL: https://github.com/api/v3/
       GITHUB_TOKEN: {{github-token}}
   - task: Update quality hub with version number
     file: code-src/ci/tasks/set-quality-hub-version.yml
@@ -197,7 +197,7 @@ jobs:
     params:
       GITHUB_ORG: {{github-org-name}}
       GITHUB_REPO: {{github-repo-name}}
-      GITHUB_API_URL: https://github.homedepot.com/api/v3/
+      GITHUB_API_URL: https://github.com/api/v3/
       GITHUB_TOKEN: {{github-token}}
   - task: pull from artifactory
     file: code-src/ci/tasks/pull-from-artifactory.yml
@@ -227,7 +227,7 @@ jobs:
     params:
       GITHUB_ORG: {{github-org-name}}
       GITHUB_REPO: {{github-repo-name}}
-      GITHUB_API_URL: https://github.homedepot.com/api/v3/
+      GITHUB_API_URL: https://github.com/api/v3/
       GITHUB_TOKEN: {{github-token}}
   - task: Promote artifact
     file: code-src/ci/tasks/artifact-promotion.yml
@@ -239,7 +239,7 @@ jobs:
       VERSION_FILE: gh-release/version
       GITHUB_ORG: {{github-org-name}}
       GITHUB_REPO: {{github-repo-name}}
-      GITHUB_API_URL: https://github.homedepot.com/api/v3/
+      GITHUB_API_URL: https://github.com/api/v3/
       GITHUB_TOKEN: {{github-token}}
 
 - name: Create Change Request

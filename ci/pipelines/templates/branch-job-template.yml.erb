@@ -1,37 +1,8 @@
-- name: Merge <%= branch_name.gsub('/', '-').gsub('#', '-').squeeze('-') %>
+- name: Hello World (<%= branch_name.gsub('/', '-').gsub('#', '-').squeeze('-') %>)
   max_in_flight: 1
   plan:
   - get: code-src
     resource: <%= uri.split('/').last.gsub('.git', '') %>(<%= branch_name.gsub('/', '-').gsub('#', '-').squeeze('-') %>)
     trigger: true
-  - task: merge master
-    file: code-src/ci/tasks/merge-branch.yml
-    params:
-      BRANCH: master
-  - put: code-src
-    resource: <%= uri.split('/').last.gsub('.git', '') %>(<%= branch_name.gsub('/', '-').gsub('#', '-').squeeze('-') %>)
-    params: {repository: merged-code}
-  - put: timestamp
-
-- name: Create Pull Request <%= branch_name.gsub('/', '-').gsub('#', '-').squeeze('-') %>
-  max_in_flight: 1
-  plan:
-  - get: code-src
-    passed: [Merge <%= branch_name.gsub('/', '-').gsub('#', '-').squeeze('-') %>]
-    resource: <%= uri.split('/').last.gsub('.git', '') %>(<%= branch_name.gsub('/', '-').gsub('#', '-').squeeze('-') %>)
-    trigger: true
-  - get: build-resource
-  - task: open pull request
-    file: code-src/ci/tasks/open-pull-request.yml
-    params:
-      BASE: master
-      GITHUB_USER: {{github-user}}
-      GITHUB_TOKEN: {{github-token}}
-      OWNER_REPO: <%= uri.split(':').last.gsub('.git', '') %>
-  - put: build-resource
-    params: {repository: update-build}
-
-
-
-
-
+  - task: Say Hello
+    file: code-src/ci/tasks/hello.yml
