@@ -1,7 +1,0 @@
-- name: <%= uri.split('/').last.gsub('.git', '') %>(<%= branch_name.gsub('/', '-').gsub('#', '-').squeeze('-') %>)
-  type: git
-  source:
-    uri: <%= uri %>
-    branch: <%= branch_name %>
-    private_key: {{github-private-key}}
-  check_every: 300s

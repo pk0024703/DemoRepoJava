@@ -10,7 +10,7 @@ resources:
   source:
     uri: https://github.com/karthidec/DemoRepoJava.git
     branch: master
-    private_key: {{github-private-key}}
+    private_key: ((github-private-key))
   check_every: 300s
 
 - name: concourse-branch-manager
@@ -25,7 +25,7 @@ resources:
   source:
     uri: https://github.com/karthidec/DemoRepoJava.git
     max_branches: 12
-    private_key: {{github-private-key}}
+    private_key: ((github-private-key))
   check_every: 300s
 
 jobs:
@@ -54,6 +54,5 @@ jobs:
       CONCOURSE_USERNAME: branch-manager
       CONCOURSE_PASSWORD: branch-manager
       CONCOURSE_TEAM: branch-manager
-      PIPELINE_LOAD_VARS_FROM_1: template-repo/secrets.yml
+      PIPELINE_LOAD_VARS_FROM_1: template-repo/ci/secrets.yml
       GROUP_PER_BRANCH: true
-
