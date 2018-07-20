@@ -10,7 +10,7 @@ resources:
   source:
     uri: https://github.com/karthidec/DemoRepoJava.git
     branch: master
-    private_key: ((github-private-key))
+    private_key: {{github-private-key}}
   check_every: 300s
 
 - name: concourse-branch-manager
@@ -25,7 +25,7 @@ resources:
   source:
     uri: https://github.com/karthidec/DemoRepoJava.git
     max_branches: 12
-    private_key: ((github-private-key))
+    private_key: {{github-private-key}}
   check_every: 300s
 
 jobs:
