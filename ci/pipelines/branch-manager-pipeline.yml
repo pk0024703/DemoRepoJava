@@ -61,7 +61,7 @@ resources:
   source:
     owner: {{github-org-name}}
     repository: {{github-repo-name}}
-    github_api_url: https://github.homedepot.com/api/v3/
+    github_api_url: https://github.com/api/v3/
     access_token: {{github-token}}
 
 - name: pcf-np
