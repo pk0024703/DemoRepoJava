@@ -1,7 +1,7 @@
-github-uri: git@github.com:pk0024703/DemoRepoJava.git
-github-semver-uri: git@github.homedepot.com:Gatekeeper/application-manager-semver.git
-github-credentials-uri: git@github.homedepot.com:Gatekeeper/apper-keeper-aggregator-credentials.git
-github-org-name: pk0024703
+github-uri: https://github.com/karthidec/DemoRepoJava.git
+#github-semver-uri: git@github.homedepot.com:Gatekeeper/application-manager-semver.git
+#github-credentials-uri: git@github.homedepot.com:Gatekeeper/apper-keeper-aggregator-credentials.git
+github-org-name: karthidec
 github-repo-name: DemoRepoJava
 concourse-url: https://concourse-pipeline-engineering.apps-np.homedepot.com
 tracker-project-id: "2026577"
